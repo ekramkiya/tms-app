@@ -23,6 +23,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Filter;
 use Morilog\Jalali\Jalalian;
+use Carbon\Carbon;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 
 use Illuminate\Database\Eloquent\Builder;
 
@@ -242,36 +244,31 @@ class FormEntryResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                Filter::make('created_at')
-                  ->form([
-        DatePicker::make('created_from')
-            ->jalali()
-            ->label('از تاریخ'),
-        DatePicker::make('created_until')
-            ->jalali()
-            ->label('تا تاریخ'),
-    ])
-    ->query(function (Builder $query, array $data): Builder {
-        return $query
-            ->when(
-                $data['created_from'],
-                fn (Builder $query, $date): Builder => $query->whereDate(
-                    'created_at', 
-                    '>=', 
-                    Jalalian::fromFormat('Y/m/d', $date)->toCarbon() // Convert to Gregorian
-                ),
-            )
-            ->when(
-                $data['created_until'],
-                fn (Builder $query, $date): Builder => $query->whereDate(
-                    'created_at', 
-                    '<=', 
-                    Jalalian::fromFormat('Y/m/d', $date)->toCarbon() // Convert to Gregorian
-                ),
-            );
-            })
-            ])
+->filters([
+    Filter::make('created_at')
+        ->form([
+            DatePicker::make('created_from')
+                ->label('از تاریخ')
+                ->jalali(),
+
+            DatePicker::make('created_until')
+                ->label('تا تاریخ')
+                ->jalali(),
+        ])
+        ->query(function (Builder $query, array $data): Builder {
+            if (!empty($data['created_from'])) {
+                $fromDate = Carbon::parse($data['created_from'])->startOfDay();
+                $query->whereDate('created_at', '>=', $fromDate);
+            }
+
+            if (!empty($data['created_until'])) {
+                $toDate = Carbon::parse($data['created_until'])->endOfDay();
+                $query->whereDate('created_at', '<=', $toDate);
+            }
+
+            return $query;
+        }),
+])
             ->recordActions([
                 EditAction::make()->label('ویرایش'),
                 DeleteAction::make()->label('حذف'),
@@ -279,7 +276,8 @@ class FormEntryResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->label('حذف گروهی'),
+                    ExportBulkAction::make()->label('خروجی به اکسل'),
+                    // DeleteBulkAction::make()->label('حذف گروهی'),
                 ]),
             ]);
     }
