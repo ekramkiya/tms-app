@@ -22,6 +22,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Filter;
+use Morilog\Jalali\Jalalian;
 
 use Illuminate\Database\Eloquent\Builder;
 
@@ -231,36 +232,45 @@ class FormEntryResource extends Resource
 
                 TextColumn::make('created_at')
                     ->label('تاریخ ایجاد')
-                    ->dateTime()
+                    ->jalaliDateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->label('تاریخ به‌روزرسانی')
-                    ->dateTime()
+                    ->jalaliDateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Filter::make('created_at')
-                    ->form([
-                        DatePicker::make('created_from')
-                            ->label('From Date'),
-
-                        DatePicker::make('created_until')
-                            ->label('To Date'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'] ?? null,
-                                fn(Builder $query, $date) => $query->whereDate('created_at', '>=', $date)
-                            )
-                            ->when(
-                                $data['created_until'] ?? null,
-                                fn(Builder $query, $date) => $query->whereDate('created_at', '<=', $date)
-                            );
-                    }),
+                  ->form([
+        DatePicker::make('created_from')
+            ->jalali()
+            ->label('از تاریخ'),
+        DatePicker::make('created_until')
+            ->jalali()
+            ->label('تا تاریخ'),
+    ])
+    ->query(function (Builder $query, array $data): Builder {
+        return $query
+            ->when(
+                $data['created_from'],
+                fn (Builder $query, $date): Builder => $query->whereDate(
+                    'created_at', 
+                    '>=', 
+                    Jalalian::fromFormat('Y/m/d', $date)->toCarbon() // Convert to Gregorian
+                ),
+            )
+            ->when(
+                $data['created_until'],
+                fn (Builder $query, $date): Builder => $query->whereDate(
+                    'created_at', 
+                    '<=', 
+                    Jalalian::fromFormat('Y/m/d', $date)->toCarbon() // Convert to Gregorian
+                ),
+            );
+            })
             ])
             ->recordActions([
                 EditAction::make()->label('ویرایش'),

@@ -37,12 +37,12 @@ class UsersTable
 
                 TextColumn::make('created_at')
                     ->label('ساخت شده در')
-                    ->dateTime()
+                    ->jalaliDateTime()
                     ->sortable(),
 
                 TextColumn::make('updated_at')
                     ->label('به روز شده در')
-                    ->dateTime()
+                    ->jalaliDateTime()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
 

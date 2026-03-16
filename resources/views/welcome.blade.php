@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome-page</title>
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -23,7 +23,7 @@
       <img src="{{ asset('images/logo.jpg') }}" alt="Logo" class="mx-auto w-36 h-36 mb-6 rounded-full shadow-lg">
 
       <!-- Welcome Message -->
-      <h1 class="text-4xl font-extrabold mb-4 text-gray-900">به وبسایت ما خوش آمدید!</h1>
+      <h1 class="text-4xl font-extrabold mb-4 text-gray-900">دوباره   خوش آمدید!</h1>
       <p class="text-gray-700 mb-8 text-lg">لطفاً برای ادامه وارد شوید</p>
 
       <!-- Login Button -->
